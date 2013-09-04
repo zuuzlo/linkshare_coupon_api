@@ -1,6 +1,6 @@
 # LinkshareCouponApi
 
-Ruby wrapper for [LinkShare Coupon Web Services](http://helpcenter.linkshare.com/publisher/questions.php?questionid=865)Followed general logic found in linkshare_api gem
+Ruby wrapper for [LinkShare Coupon Web Services] (http://helpcenter.linkshare.com/publisher/questions.php?questionid=865) Followed general logic found in [linkshareAPI] (https://github.com/rmarescu/linkshare_api) gem
 
 If you need services that are not yet supported, feel free to [contribute](#contributing).
 For questions or bugs please [create an issue](../../issues/new).
@@ -26,8 +26,8 @@ Or install it yourself as:
 Easy access to coupons and promotional link data for your advertisers using [Coupon Web Service](http://helpcenter.linkshare.com/publisher/questions.php?questionid=865)
 
 ```ruby
-#Search for promotion type: "Clearance" from Wal-Mart, within category  Apparel - Babies & Kids
-#in the US network
+#Search for promotion type: "Clearance" from Wal-Mart, within category  
+#Apparel - Babies & Kids in the US network
 options = {
   promotiontype: 3 #3 - Clearance,
   mid: 2149, # Wal-Mart
@@ -50,7 +50,7 @@ If there are multiple pages, you can retrieve all pages by using the ```all``` m
   end
 ```
 
-#Submitting Queries with Multiple Values
+####Submitting Queries with Multiple Values
 You can place multiple values in all query string variables, except for 'token=', by delimiting the values with a pipe character '|'. Multiple values passed within one variable are treated as an OR condition. For example, 'category=1|2|3' sends links from categories 1 or 2 or 3.
 ```ruby
 options = {
