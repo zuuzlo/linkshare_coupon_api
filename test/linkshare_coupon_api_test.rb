@@ -58,7 +58,7 @@ class LinkshareCouponApiTest < Test::Unit::TestCase
     assert_equal "Usage Quota Exceeded", e.message
   end
 
-  def test_coupon_web_service_invalid_or_missing_parameters
+  def test_coupon_web_service_invalid_parameters
     LinkshareCouponApi.token = token
     xml_response = <<-XML
       <?xml version="1.0" encoding="UTF-8"?>
@@ -202,6 +202,53 @@ class LinkshareCouponApiTest < Test::Unit::TestCase
     assert_equal 9, data.count
     assert_equal "Free Shipping!", data.first.offerdescription
     assert_equal "http://ad.linksynergy.com/fs-bin/show?id=V8uMkWlCTes&bids=297133.9&type=3&subid=0", data.last.impressionpixel
+  end
+
+  def test_coupon_web_service_with_no_options
+    LinkshareCouponApi.token = token
+    xml_response = <<-XML
+      <?xml version="1.0" encoding="UTF-8"?>
+      <couponfeed><TotalMatches>3</TotalMatches><TotalPages>1</TotalPages><PageNumberRequested>1</PageNumberRequested><link type="TEXT"><categories><category id="1">Apparel</category><category id="20">House wares</category><category id="21">Jewelry &amp; Accessories</category></categories><promotiontypes><promotiontype id="7">Free Shipping</promotiontype></promotiontypes><offerdescription>Free Shipping!</offerdescription><offerstartdate>2013-08-30</offerstartdate><offerenddate>2013-09-09</offerenddate><couponrestriction>On Orders Over $75</couponrestriction><clickurl>http://click.linksynergy.com/fs-bin/click?id=V8uMkWlCTes&amp;offerid=297133.410&amp;type=3&amp;subid=0</clickurl><impressionpixel>http://ad.linksynergy.com/fs-bin/show?id=V8uMkWlCTes&amp;bids=297133.410&amp;type=3&amp;subid=0</impressionpixel><advertiserid>38605</advertiserid><advertisername>Kohls Department Stores Inc</advertisername><network id="1">US Network</network></link><link type="TEXT"><categories><category id="12">Department Store</category></categories><promotiontypes><promotiontype id="1">General Promotion</promotiontype></promotiontypes><offerdescription>Take an Extra 15% off your order when you use your Kohl's Charge card!</offerdescription><offerstartdate>2013-08-08</offerstartdate><offerenddate>2016-08-01</offerenddate><clickurl>http://click.linksynergy.com/fs-bin/click?id=V8uMkWlCTes&amp;offerid=297133.133&amp;type=3&amp;subid=0</clickurl><impressionpixel>http://ad.linksynergy.com/fs-bin/show?id=V8uMkWlCTes&amp;bids=297133.133&amp;type=3&amp;subid=0</impressionpixel><advertiserid>38605</advertiserid><advertisername>Kohls Department Stores Inc</advertisername><network id="1">US Network</network></link><link type="TEXT"><categories><category id="12">Department Store</category></categories><promotiontypes><promotiontype id="1">General Promotion</promotiontype></promotiontypes><offerdescription>Shop Kohl's.com today!</offerdescription><offerstartdate>2013-08-08</offerstartdate><offerenddate>2019-07-31</offerenddate><clickurl>http://click.linksynergy.com/fs-bin/click?id=V8uMkWlCTes&amp;offerid=297133.132&amp;type=3&amp;subid=0</clickurl><impressionpixel>http://ad.linksynergy.com/fs-bin/show?id=V8uMkWlCTes&amp;bids=297133.132&amp;type=3&amp;subid=0</impressionpixel><advertiserid>38605</advertiserid><advertisername>Kohls Department Stores Inc</advertisername><network id="1">US Network</network></link></couponfeed>
+    XML
+    stub_request(
+      :get,
+      "http://couponfeed.linksynergy.com/coupon?token=#{token}"
+      ).
+      to_return(
+        status: 200,
+        body: xml_response,
+        headers: { "Content-type" => "text/xml; charset=UTF-8" }
+    )
+    response = LinkshareCouponApi.coupon_web_service()
+    assert_equal 3, response.total_matches
+    assert_equal 1, response.total_pages
+    assert_equal 1, response.page_number_requested
+    assert_equal "Free Shipping!", response.data.first.offerdescription
+    assert_equal 'http://click.linksynergy.com/fs-bin/click?id=V8uMkWlCTes&offerid=297133.132&type=3&subid=0', response.data.last.clickurl
+  end
+
+  def test_coupon_web_service_with_multiple_options_for_one_option
+    LinkshareCouponApi.token = token
+    options = { category: '1|20|21', mid: 38650, network: 1 }
+    xml_response = <<-XML
+      <?xml version="1.0" encoding="UTF-8"?>
+      <couponfeed><TotalMatches>1</TotalMatches><TotalPages>1</TotalPages><PageNumberRequested>1</PageNumberRequested><link type="TEXT"><categories><category id="1">Apparel</category><category id="20">House wares</category><category id="21">Jewelry &amp; Accessories</category></categories><promotiontypes><promotiontype id="7">Free Shipping</promotiontype></promotiontypes><offerdescription>Free Shipping!</offerdescription><offerstartdate>2013-08-30</offerstartdate><offerenddate>2013-09-09</offerenddate><couponrestriction>On Orders Over $75</couponrestriction><clickurl>http://click.linksynergy.com/fs-bin/click?id=V8uMkWlCTes&amp;offerid=297133.410&amp;type=3&amp;subid=0</clickurl><impressionpixel>http://ad.linksynergy.com/fs-bin/show?id=V8uMkWlCTes&amp;bids=297133.410&amp;type=3&amp;subid=0</impressionpixel><advertiserid>38605</advertiserid><advertisername>Kohls Department Stores Inc</advertisername><network id="1">US Network</network></link></couponfeed>
+    XML
+    stub_request(
+      :get,
+      "http://couponfeed.linksynergy.com/coupon?category=1%7C20%7C21&mid=38650&network=1&token=#{token}"
+      ).
+      to_return(
+        status: 200,
+        body: xml_response,
+        headers: { "Content-type" => "text/xml; charset=UTF-8" }
+    )
+    response = LinkshareCouponApi.coupon_web_service(options)
+    assert_equal 1, response.total_matches
+    assert_equal 1, response.total_pages
+    assert_equal 1, response.page_number_requested
+    assert_equal "Free Shipping!", response.data.first.offerdescription
+    assert_equal 'http://click.linksynergy.com/fs-bin/click?id=V8uMkWlCTes&offerid=297133.410&type=3&subid=0', response.data.last.clickurl
   end
 
   private

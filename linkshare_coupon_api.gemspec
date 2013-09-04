@@ -10,7 +10,7 @@ Gem::Specification.new do |spec|
   spec.email         = ["zuuzlo@yahoo.com"]
   spec.description   = %q{Ruby wrapper for Linkshare Coupon Web Service. See http://helpcenter.linkshare.com/publisher/questions.php?questionid=865}
   spec.summary       = %q{Linkshare Coupon Web Service}
-  spec.homepage      = ""
+  spec.homepage      = "https://github.com/zuuzlo/linkshare_coupon_api"
   spec.license       = "MIT"
 
   spec.files         = `git ls-files`.split($/)
